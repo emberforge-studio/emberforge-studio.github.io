@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmberForge - À Propos de Nous</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --flame-orange: #FF6700;
+            --polar-white: #F5F5F5;
+            --dark-grey: #222831;
+            --light-grey-card: #393E46;
+            --darker-orange-hover: #E05A00;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-grey);
+            color: var(--polar-white);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        main {
+            flex-grow: 1;
+            padding-top: 6rem; /* Espace pour le header fixe */
+        }
+        .flame-orange {
+            color: var(--flame-orange);
+        }
+        .bg-flame-orange {
+            background-color: var(--flame-orange);
+        }
+
+        /* Header & Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background-color: rgba(34, 40, 49, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .nav-link {
+            color: var(--polar-white);
+            transition: color 0.3s ease, background-color 0.3s ease;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem; /* rounded-md */
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--flame-orange);
+            background-color: rgba(255, 103, 0, 0.1);
+        }
+        .nav-link.active {
+            font-weight: 600;
+        }
+
+        /* Mobile Navigation Styles */
+        .mobile-menu-button {
+            color: var(--polar-white);
+        }
+        .mobile-nav {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--dark-grey);
+            padding: 1rem;
+            border-top: 1px solid var(--light-grey-card);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .mobile-nav.open {
+            display: block;
+        }
+        .mobile-nav a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--polar-white);
+            border-bottom: 1px solid var(--light-grey-card);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .mobile-nav a:last-child {
+            border-bottom: none;
+        }
+        .mobile-nav a:hover, .mobile-nav a.active {
+            background-color: var(--flame-orange);
+            color: var(--dark-grey);
+        }
+
+        .page-title-container {
+            padding-top: 2rem; /* Réduit car main a déjà un padding-top */
+            padding-bottom: 2rem;
+            text-align: center;
+        }
+        .page-main-title {
+            font-weight: 900;
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .page-main-title .highlight {
+            color: var(--flame-orange);
+            text-shadow: 0 0 10px rgba(255, 103, 0, 0.7);
+        }
+        .page-subtitle {
+            max-w-3xl mx-auto text-lg text-gray-300 mb-12;
+        }
+
+        /* Section Content Styles */
+        .content-section {
+            background-color: var(--light-grey-card);
+            padding: 2rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            margin-bottom: 2.5rem; /* Espace entre les sections */
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            opacity: 0; /* Pour animation */
+            transform: translateY(20px); /* Pour animation */
+        }
+        .content-section.visible { /* Classe ajoutée par JS pour l'animation */
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .section-heading {
+            font-size: 2rem; /* text-3xl */
+            font-weight: 700; /* bold */
+            color: var(--flame-orange);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--flame-orange);
+            display: inline-block;
+        }
+        .content-section p, .content-section ul {
+            font-size: 1.05rem; /* Un peu plus grand pour la lisibilité */
+            line-height: 1.8;
+            color: #E0E0E0; /* Blanc légèrement grisé */
+            margin-bottom: 1rem;
+        }
+        .content-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .content-section ul li {
+            padding-left: 1.5rem;
+            position: relative;
+            margin-bottom: 0.75rem;
+        }
+        .content-section ul li::before {
+            content: '🔥'; /* Ou une autre icône/symbole SVG */
+            position: absolute;
+            left: 0;
+            color: var(--flame-orange);
+            font-size: 1rem;
+        }
+
+        /* Creator Section Specifics */
+        .creator-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .creator-layout {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+        .creator-image-container {
+            flex-shrink: 0;
+            width: 200px; /* Taille de l'image du créateur */
+            height: 200px;
+            border-radius: 50%; /* Image ronde */
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(255, 103, 0, 0.5);
+            border: 3px solid var(--flame-orange);
+        }
+        .creator-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .creator-bio {
+            flex-grow: 1;
+        }
+
+        /* Animation d'apparition pour les éléments */
+        .animate-fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUpAnimation 0.8s 0.2s forwards cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        @keyframes fadeInUpAnimation {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .delay-1 { animation-delay: 0.3s !important; }
+        .delay-2 { animation-delay: 0.4s !important; }
+
+    </style>
+</head>
+<body class="antialiased">
+
+    <header>
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center relative">
+            <a href="index.html" class="flex items-center text-3xl font-black">
+                <img src="https://usercontent.googleapis.com/a/user/uploaded:image.png-eceb2dcf-8471-4362-87e8-0c6ba9027524" alt="Logo EmberForge" class="h-12 w-auto mr-3 shrink-0">
+                <span class="flame-orange">Ember</span><span class="text-white">Forge</span>
+            </a>
+            
+            <nav class="hidden md:flex space-x-2">
+                <a href="index.html" class="nav-link">Accueil</a>
+                <a href="games.html" class="nav-link">Nos Jeux</a>
+                <a href="about.html" class="nav-link active">À Propos</a>
+                {/* <a href="contact.html" class="nav-link">Contact</a> */}
+            </nav>
+
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="mobile-menu-button p-2 rounded-md focus:outline-none" aria-label="Ouvrir le menu principal" aria-expanded="false">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="mobile-nav-menu" class="mobile-nav md:hidden">
+                <a href="index.html" class="nav-link">Accueil</a>
+                <a href="games.html" class="nav-link">Nos Jeux</a>
+                <a href="about.html" class="nav-link active">À Propos</a>
+                {/* <a href="contact.html" class="nav-link">Contact</a> */}
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        <div class="page-title-container">
+            <h1 class="page-main-title animate-fade-in-up">
+                Notre <span class="highlight">Flamme</span> Intérieure
+            </h1>
+            <p class="page-subtitle animate-fade-in-up delay-1">
+                Découvrez qui nous sommes, ce qui nous anime et où nous souhaitons vous emmener.
+            </p>
+        </div>
+
+        <section class="content-section" id="studio-section">
+            <h2 class="section-heading">Notre Studio : EmberForge</h2>
+            <p>
+                EmberForge est plus qu'un simple studio de développement de jeux. C'est une forge où les idées prennent vie, où la passion pour le jeu vidéo se transforme en mondes interactifs et immersifs. Nés d'une étincelle créative, nous nous engageons à façonner des expériences mémorables, en portant une attention particulière à la narration, à l'innovation gameplay et à la direction artistique.
+            </p>
+            <p>
+                Nous croyons fermement au pouvoir des jeux pour inspirer, divertir et connecter les gens. Chaque projet est une nouvelle aventure, un défi que nous relevons avec enthousiasme et détermination, en cherchant constamment à repousser nos propres limites.
+            </p>
+        </section>
+
+        <section class="content-section" id="creator-section">
+            <h2 class="section-heading">Le Cœur de la Forge : Le Créateur</h2>
+            <div class="creator-layout">
+                <div class="creator-image-container">
+                    <img src="https://placehold.co/200x200/393E46/F5F5F5?text=Photo+Cr%C3%A9ateur&font=inter" alt="Photo du créateur d'EmberForge" class="creator-image">
+                </div>
+                <div class="creator-bio">
+                    <p>
+                        Derrière EmberForge se trouve [Nom du Créateur], un passionné de jeux vidéo depuis son plus jeune âge. Avec [X] années d'expérience dans [domaine pertinent, ex: le développement de logiciels, la conception de jeux, l'art numérique], il a décidé de canaliser sa vision et son expertise pour créer un studio qui reflète ses valeurs fondamentales : la créativité, l'excellence et le respect des joueurs.
+                    </p>
+                    <p>
+                        "[Citation inspirante du créateur sur sa vision pour EmberForge ou le jeu vidéo en général. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.]"
+                    </p>
+                    <p>
+                        Son objectif est de bâtir une équipe talentueuse et de collaborer avec d'autres créatifs pour donner vie à des univers riches et captivants.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section" id="ambitions-section">
+            <h2 class="section-heading">Nos Ambitions : Forger l'Avenir</h2>
+            <p>
+                Chez EmberForge, notre ambition ne se limite pas à la création de jeux. Nous aspirons à :
+            </p>
+            <ul>
+                <li><strong>Innover Constamment :</strong> Explorer de nouvelles mécaniques de jeu, des technologies émergentes et des approches narratives audacieuses pour offrir des expériences toujours plus surprenantes.</li>
+                <li><strong>Construire des Communautés Fortes :</strong> Créer des espaces où les joueurs peuvent se rencontrer, partager leurs expériences et contribuer à l'évolution de nos univers.</li>
+                <li><strong>Laisser une Empreinte Durable :</strong> Développer des jeux qui marquent les esprits, qui suscitent des émotions et qui restent gravés dans la mémoire des joueurs bien après qu'ils aient posé la manette.</li>
+                <li><strong>Grandir avec Intégrité :</strong> Bâtir un studio pérenne, éthique et respectueux de ses collaborateurs et de sa communauté, tout en visant l'excellence dans chaque aspect de notre travail.</li>
+                <li><strong>Explorer des Genres Variés :</strong> Bien que notre cœur puisse battre pour certains types de jeux, nous sommes ouverts à l'exploration de genres divers pour toucher un large public et stimuler notre créativité.</li>
+            </ul>
+            <p>
+                L'aventure EmberForge ne fait que commencer. Nous sommes impatients de partager avec vous les mondes que nous allons forger ensemble.
+            </p>
+        </section>
+
+    </main>
+
+    <footer class="bg-[#1E2228] py-4 text-center mt-auto">
+        <div class="container mx-auto px-6">
+            <p class="text-gray-500 text-sm">
+                &copy; <span id="currentYear"></span> EmberForge Studios. Tous droits réservés.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Définit l'année en cours dans le pied de page
+        const currentYearElement = document.getElementById('currentYear');
+        if (currentYearElement) {
+            currentYearElement.textContent = new Date().getFullYear();
+        }
+
+        // Logique du menu mobile
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileNavMenu = document.getElementById('mobile-nav-menu');
+        const mobileMenuIcon = mobileMenuButton.querySelector('svg path');
+
+        mobileMenuButton.addEventListener('click', () => {
+            const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true' || false;
+            mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
+            mobileNavMenu.classList.toggle('open');
+            
+            if (mobileNavMenu.classList.contains('open')) {
+                mobileMenuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12'); // Icône Croix
+            } else {
+                mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16'); // Icône Hamburger
+            }
+        });
+
+        // Animation d'apparition pour les sections de contenu au défilement
+        const contentSections = document.querySelectorAll('.content-section');
+        const sectionObserverOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15 // 15% de la section visible
+        };
+
+        const sectionObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    // Applique la classe avec un léger décalage pour l'effet
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 100); // Délai de 100ms entre chaque section
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, sectionObserverOptions);
+
+        contentSections.forEach(section => {
+            sectionObserver.observe(section);
+        });
+    </script>
+
+</body>
+</html>

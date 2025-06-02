@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmberForge - KAKUGO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --flame-orange: #FF6700;
+            --polar-white: #F5F5F5;
+            --dark-grey: #222831;
+            --light-grey-card: #393E46;
+            --medium-grey: #4A5568;
+            --darker-orange-hover: #E05A00;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-grey);
+            color: var(--polar-white);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        main {
+            flex-grow: 1;
+            padding-top: 8rem; /* Espace pour le header fixe + barre d'onglets */
+        }
+        .flame-orange { color: var(--flame-orange); }
+        .bg-flame-orange { background-color: var(--flame-orange); }
+
+        /* Header & Navigation (shared styles) */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background-color: rgba(34, 40, 49, 0.85);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .nav-link {
+            color: var(--polar-white);
+            transition: color 0.3s ease, background-color 0.3s ease;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--flame-orange);
+            background-color: rgba(255, 103, 0, 0.1);
+        }
+        .nav-link.active { font-weight: 600; }
+
+        .mobile-menu-button { color: var(--polar-white); }
+        .mobile-nav {
+            display: none; position: absolute; top: 100%; left: 0; right: 0;
+            background-color: var(--dark-grey); padding: 1rem;
+            border-top: 1px solid var(--light-grey-card); box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .mobile-nav.open { display: block; }
+        .mobile-nav a {
+            display: block; padding: 0.75rem 1rem; color: var(--polar-white);
+            border-bottom: 1px solid var(--light-grey-card); transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .mobile-nav a:last-child { border-bottom: none; }
+        .mobile-nav a:hover, .mobile-nav a.active { background-color: var(--flame-orange); color: var(--dark-grey); }
+
+        /* Tab Navigation for Game Page */
+        .tab-bar {
+            position: fixed;
+            top: 68px; /* Height of header, adjust if header height changes */
+            left: 0;
+            right: 0;
+            background-color: var(--light-grey-card);
+            z-index: 40;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .tab-button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin-right: 0.5rem;
+            color: var(--polar-white);
+            background-color: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        .tab-button:hover {
+            color: var(--flame-orange);
+        }
+        .tab-button.active {
+            color: var(--flame-orange);
+            border-bottom-color: var(--flame-orange);
+            font-weight: 700;
+        }
+
+        /* Edit Mode Toggle Button */
+        .edit-mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            padding: 0.75rem 1.25rem;
+            background-color: var(--flame-orange);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255,103,0,0.4);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .edit-mode-toggle:hover {
+            background-color: var(--darker-orange-hover);
+            transform: translateY(-2px);
+        }
+        .edit-mode-toggle.editing {
+            background-color: #D32F2F; /* Red to indicate edits are not saved */
+        }
+         .edit-mode-toggle.editing:hover {
+            background-color: #B71C1C;
+        }
+
+        /* Content Styling */
+        .tab-content {
+            display: none; /* Hidden by default, shown by JS */
+            padding: 1.5rem;
+            background-color: var(--dark-grey); /* Ensure content area has base background */
+            animation: fadeInAnimation 0.5s ease-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .content-block {
+            background-color: var(--light-grey-card);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .content-block h2, .content-block h3 {
+            color: var(--flame-orange);
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid var(--medium-grey);
+            padding-bottom: 0.5rem;
+        }
+        .content-block h2 { font-size: 1.75rem; font-weight: 700; }
+        .content-block h3 { font-size: 1.4rem; font-weight: 600; margin-top:1rem; }
+        .content-block p, .content-block ul, .content-block li {
+            color: var(--polar-white);
+            line-height: 1.7;
+            margin-bottom: 0.75rem;
+        }
+        .content-block ul { list-style: disc; padding-left: 1.5rem; }
+        .content-block strong { color: var(--flame-orange); }
+        .content-block img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.375rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid var(--medium-grey);
+        }
+        .game-logo {
+            max-width: 250px;
+            margin: 0 auto 1.5rem auto;
+            display: block;
+            background-color: white; /* If logo has transparent parts and is dark */
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* Editable fields styling */
+        [contenteditable="true"] {
+            outline: 2px dashed var(--flame-orange);
+            background-color: rgba(255, 103, 0, 0.05);
+            padding: 0.25rem;
+            min-height: 1.5em; /* Ensure even empty fields are clickable */
+        }
+        .editable-text { display: block; } /* Make paragraphs and other text elements block for easier editing */
+        .editable-list-item { display: list-item; } /* For list items inside editable UL */
+
+        @keyframes fadeInAnimation {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Message Box */
+        #message-box {
+            position: fixed;
+            bottom: 80px; /* Above edit button */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--medium-grey);
+            color: var(--polar-white);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 110;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .placeholder-image {
+            background-color: var(--medium-grey);
+            color: var(--polar-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: 0.375rem;
+            border: 2px dashed var(--flame-orange);
+            font-style: italic;
+            min-height: 100px; /* Ensure placeholder has some height */
+        }
+
+    </style>
+</head>
+<body class="antialiased">
+
+    <header>
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center relative">
+            <a href="index.html" class="flex items-center text-3xl font-black">
+                <img src="https://usercontent.googleapis.com/a/user/uploaded:image.png-eceb2dcf-8471-4362-87e8-0c6ba9027524" alt="Logo EmberForge" class="h-12 w-auto mr-3 shrink-0">
+                <span class="flame-orange">Ember</span><span class="text-white">Forge</span>
+            </a>
+            <nav class="hidden md:flex space-x-2">
+                <a href="index.html" class="nav-link">Accueil</a>
+                <a href="games.html" class="nav-link">Nos Jeux</a>
+                <a href="about.html" class="nav-link">À Propos</a>
+                <a href="kakugo.html" class="nav-link active">KAKUGO</a>
+            </nav>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="mobile-menu-button p-2 rounded-md focus:outline-none" aria-label="Ouvrir le menu principal" aria-expanded="false">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+            <div id="mobile-nav-menu" class="mobile-nav md:hidden">
+                <a href="index.html" class="nav-link">Accueil</a>
+                <a href="games.html" class="nav-link">Nos Jeux</a>
+                <a href="about.html" class="nav-link">À Propos</a>
+                <a href="kakugo.html" class="nav-link active">KAKUGO</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="tab-bar" id="kakugo-tab-bar">
+        <button class="tab-button active" data-tab="overview">Vue d'Ensemble</button>
+        <button class="tab-button" data-tab="gameplay">Gameplay</button>
+        <button class="tab-button" data-tab="abilities">Compétences</button>
+        <button class="tab-button" data-tab="environment">Environnement</button>
+        <button class="tab-button" data-tab="narrative">Narratif</button>
+        <button class="tab-button" data-tab="art">Artistique</button>
+        <button class="tab-button" data-tab="technical">Technique</button>
+    </div>
+
+    <main class="container mx-auto px-2 md:px-6 pb-8">
+        <div id="tab-overview" class="tab-content active">
+            <div class="content-block">
+                <img src="https://i.imgur.com/r5If05P.png" alt="Logo KAKUGO" class="game-logo" id="kakugo_logo_img_src" data-default-src="https://i.imgur.com/r5If05P.png">
+                <h1 class="text-4xl font-black text-center mb-6 editable-text" id="kakugo_title">KAKUGO</h1>
+                <p class="text-center text-lg italic mb-8 editable-text" id="kakugo_meaning">(Signifie “Résolution” en japonais)</p>
+                
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div><strong>Type :</strong> <span class="editable-text" id="kakugo_type">Action-Aventure</span></div>
+                    <div><strong>Vue Caméra :</strong> <span class="editable-text" id="kakugo_camera_view">Perspective 3ème personne</span></div>
+                    <div><strong>Contrôles :</strong> <span class="editable-text" id="kakugo_controls">Manette (préf.) ou clavier-souris</span></div>
+                    <div><strong>Support :</strong> <span class="editable-text" id="kakugo_support">PC</span></div>
+                    <div class="md:col-span-2"><strong>Public Cible :</strong> <span class="editable-text" id="kakugo_target_audience">Amateur d'aventure solo, recherchant une histoire profonde, +16.</span></div>
+                </div>
+                
+                <h2>Synopsis</h2>
+                <p class="editable-text" id="kakugo_synopsis">
+                    KAKUGO est un jeu d'action-aventure en vue à la troisième personne. Vous vivez l'histoire d'Edaryl, un homme se réveillant à la racine d'un arbre gigantesque sans aucun souvenir. Il rencontre Nynaël, une gardienne de l'Arbre-Monde, avec qui il se lie rapidement d'amitié. Edaryl et Nynaël entament un voyage à travers le monde connu pour trouver la raison de la corruption de l'Arbre-Monde. Combattant l'ombre qui a posé ses griffes sur le monde, cherchant des réponses, ils feront face à une vérité bouleversante.
+                </p>
+            </div>
+        </div>
+
+        <div id="tab-gameplay" class="tab-content">
+            <div class="content-block">
+                <h2>Contrôles Principaux</h2>
+                <p class="editable-text" id="gameplay_controls_main">Le joueur peut déplacer le personnage sur un axe horizontal à 360° avec le stick gauche. La verticalité n'apparaît qu'avec des éléments environnementaux tels que des échelles ou des cordes par exemple. La caméra peut être orientée avec le stick droit. Le personnage marche selon l'axe avant de la caméra.</p>
+                <p class="editable-text" id="gameplay_controls_interactions">Le joueur peut interagir avec les mondes et les entités par des actions simples ou des combinaisons d'entrées multiples. Les interactions sont variées mais il existe certains schémas. Il peut utiliser des capacités (cf : Système de capacités) qui permettent au joueur de combattre des ennemis ou de résoudre des énigmes.</p>
+                <p class="editable-text" id="gameplay_ui">L'interface utilisateur est composée d'un HUD qui affiche des informations importantes pour le joueur (santé, énergie, mini-carte), d'un menu de gameplay qui permet au joueur d'accéder à certains systèmes et d'un menu système qui permet au joueur de modifier les paramètres (graphismes, sons).</p>
+                <p class="editable-text" id="gameplay_input_preference">Kakugo est un jeu pensé pour être joué avec une manette, mais un clavier/souris peut également être utilisé.</p>
+                <img src="https://i.imgur.com/p0AlxT6.png" alt="Schéma Manette Xbox" class="mx-auto my-4" id="gameplay_gamepad_img_src" data-default-src="https://i.imgur.com/p0AlxT6.png">
+            </div>
+            <div class="content-block">
+                <h2>Comportement de la Caméra</h2>
+                <p class="editable-text" id="camera_perspective">La caméra est une vue à la troisième personne. Nous sommes assez proches du joueur pour voir clairement les animations mais assez loin pour voir les choses autour du joueur. La caméra suit la position du joueur. Le joueur peut contrôler l'orientation de la caméra en position orbitale autour du personnage et la position verticale. Le personnage est toujours au centre de la caméra.</p>
+                <p class="editable-text" id="camera_combat">En combat, la caméra passera en vue de dessus (top-down) pour plus de confort, avec un mouvement de configuration fluide mais rapide. On peut dire qu'il y a une Caméra de Navigation et une Caméra de Combat.</p>
+                <p class="editable-text" id="camera_effects">Certains effets de caméra sont liés aux actions du joueur pour les rendre plus percutantes ou ajouter un retour à une situation. Cela peut être des reflets de lentille, des secousses, du vignettage, du flou, etc…</p>
+                <p class="editable-text" id="camera_cutscenes">Pendant une cinématique narrative, la caméra peut changer de point de vue, de position, de rotation et de cible pour créer plus de possibilités et améliorer la qualité de la scène.</p>
+                <div class="grid md:grid-cols-3 gap-4 mt-4">
+                    <div class="placeholder-image h-40 editable-text" id="camera_nav_view_desc">Vue caméra de navigation (placeholder)</div>
+                    <div class="placeholder-image h-40 editable-text" id="camera_combat_view_desc">Vue caméra de combat (placeholder)</div>
+                    <div class="placeholder-image h-40 editable-text" id="camera_cinematic_view_desc">Vue caméra cinématique (placeholder)</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-abilities" class="tab-content">
+            <div class="content-block">
+                <h2>Système de Compétences</h2>
+                <p class="editable-text" id="abilities_intro">Edaryl est capable d'utiliser certaines capacités avec différents effets qui peuvent être améliorées en utilisant l'énergie éthérée. L'amélioration des capacités fonctionne par paliers de remplissage d'énergie éthérée. Il y a trois niveaux d'amélioration de capacité, chacun tous les 33 points d'énergie.</p>
+                <p class="editable-text" id="abilities_refill">L'énergie éthérée peut être rechargée en utilisant la capacité de recharge, mais en l'utilisant, il ne peut ni bouger ni utiliser d'autres capacités. Certains éléments environnementaux augmentent la vitesse de recharge, comme un autel ou même certaines entités qui peuvent être drainées pour être vaincues.</p>
+            </div>
+            
+            <div class="content-block">
+                <h3>Ethereal Slash</h3>
+                <p class="editable-text" id="ability_ethereal_slash_desc">Edaryl utilise son pouvoir pour fendre le vent devant lui, coupant tout sur sa rangée. Chaque entité dans l'angle et la portée de détection subit des dégâts.</p>
+                <ul class="editable-text" id="ability_ethereal_slash_tiers">
+                    <li class="editable-list-item"><strong>Tier 1 :</strong> Les dégâts d'Ethereal Slash sont augmentés d'un pourcentage lié à la quantité d'énergie actuelle du joueur. Formule : <code>currentAmountDamage += currentAmountDamage * energyAmountPercentage</code>.</li>
+                    <li class="editable-list-item"><strong>Tier 2 :</strong> La portée et la force de poussée d'Ethereal Slash sont augmentées d'un montant brut.</li>
+                    <li class="editable-list-item"><strong>Tier 3 :</strong> Ethereal Slash enflamme les entités touchées, infligeant des dégâts périodiques par intervalle aux cibles affectées pendant un nombre fixe de secondes.</li>
+                </ul>
+                <img src="https://i.imgur.com/sY2nf7A.png" alt="Ethereal Slash" id="ability_ethereal_slash_img_src" data-default-src="https://i.imgur.com/sY2nf7A.png">
+            </div>
+
+            <div class="content-block">
+                <h3>Mind Spike</h3>
+                <p class="editable-text" id="ability_mind_spike_desc">Edaryl utilise le pouvoir éthéré pour matérialiser son esprit en formant une pointe acérée. Lorsque le bouton est enfoncé, le joueur ne peut pas bouger et commence à viser en utilisant le stick de mouvement. Au relâchement du bouton, le projectile est lancé dans la direction.</p>
+                <ul class="editable-text" id="ability_mind_spike_tiers">
+                    <li class="editable-list-item"><strong>Tier 1 :</strong> Le projectile étourdit la cible touchée à l'impact.</li>
+                    <li class="editable-list-item"><strong>Tier 2 :</strong> En visant, le projectile charge sa puissance, augmentant sa vitesse de lancement, ses dégâts et sa portée.</li>
+                    <li class="editable-list-item"><strong>Tier 3 :</strong> À l'impact, le projectile explose et inflige des dégâts aux ennemis à portée, les repoussant et les étourdissant pendant une courte période.</li>
+                </ul>
+                <img src="https://i.imgur.com/gA20j8p.png" alt="Mind Spike" id="ability_mind_spike_img_src" data-default-src="https://i.imgur.com/gA20j8p.png">
+            </div>
+
+            <div class="content-block">
+                <h3>Feeling Facture</h3>
+                <p class="editable-text" id="ability_feeling_facture_desc">Edaryl laisse ses sentiments s'exprimer en créant une explosion éthérée, infligeant de lourds dégâts à chaque entité autour de lui et les repoussant. Les entités sont étourdies pendant une durée.</p>
+                <ul class="editable-text" id="ability_feeling_facture_tiers">
+                    <li class="editable-list-item"><strong>Tier 1 :</strong> Les dégâts et la portée sont augmentés.</li>
+                    <li class="editable-list-item"><strong>Tier 2 :</strong> Les entités touchées sont marquées de sangsue ; en les frappant, le joueur peut récupérer de la santé.</li>
+                    <li class="editable-list-item"><strong>Tier 3 :</strong> Toutes les entités touchées par l'explosion commencent à léviter ; si elles sont touchées, elles sont projetées avec force dans la direction du coup. Lorsqu'elles heurtent quelque chose, elles explosent, infligeant d'énormes dégâts.</li>
+                </ul>
+                <img src="https://i.imgur.com/D065n7g.png" alt="Feeling Facture" id="ability_feeling_facture_img_src" data-default-src="https://i.imgur.com/D065n7g.png">
+            </div>
+
+            <div class="content-block">
+                <h3>Soul Transfer</h3>
+                <p class="editable-text" id="ability_soul_transfer_desc">Edaryl projette rapidement son âme, transférant son corps en avant, devenant invulnérable à tout effet pendant une courte durée.</p>
+                <ul class="editable-text" id="ability_soul_transfer_tiers">
+                    <li class="editable-list-item"><strong>Tier 1 :</strong> Chaque entité traversée par Edaryl est étourdie pendant une courte période.</li>
+                    <li class="editable-list-item"><strong>Tier 2 :</strong> Chaque entité traversée par Edaryl pendant le Soul Transfer subit des dégâts.</li>
+                    <li class="editable-list-item"><strong>Tier 3 :</strong> Lorsqu'il atteint sa destination, Edaryl crée une petite explosion qui inflige des dégâts autour de lui.</li>
+                </ul>
+                <img src="https://i.imgur.com/V9x0z0y.png" alt="Soul Transfer" id="ability_soul_transfer_img_src" data-default-src="https://i.imgur.com/V9x0z0y.png">
+            </div>
+            <div class="content-block">
+                <h3>Progression et Intention de Design</h3>
+                <p class="editable-text" id="abilities_progression">Toutes les capacités ne sont pas disponibles dès le début de l'aventure. Le joueur doit les obtenir au fil de sa progression en complétant les chapitres de l'histoire. Chaque fois qu'une nouvelle capacité est acquise, un court tutoriel pour apprendre à l'utiliser commence.</p>
+                <p class="editable-text" id="abilities_design_intention">L'intention de conception de ce système est de créer un sentiment de puissance croissante issu de la nature de la magie d'Edaryl. Le choix de créer des niveaux de capacités est fait pour éviter la multiplication de différentes capacités et perdre le joueur dans un schéma de construction de deck, tout en conservant des styles de combat variés ; cela réduit le coût de production et le risque de bugs. Nous voulons éviter les systèmes et interfaces superficiels qui peuvent submerger le joueur ; nous voulons qu'il se concentre sur l'histoire et essayer de lui faire ressentir ce qu'Edaryl peut ressentir pendant sa progression.</p>
+            </div>
+        </div>
+
+        <div id="tab-environment" class="tab-content">
+            <div class="content-block">
+                <h2>Environnement Interactif</h2>
+                <p class="editable-text" id="env_intro">Dans Kakugo, et afin d'améliorer l'immersion, le joueur pourra interagir de nombreuses façons avec l'environnement d'un point de vue gameplay.</p>
+                <p class="editable-text" id="env_npcs_elements">Le joueur traversera le monde, guidé par la narration principale, et devra interagir avec des PNJ. Cela peut se faire en leur parlant, en les aidant ou même en les combattant. Au cours de la progression, le joueur devra également interagir avec des éléments de l'environnement comme des portes ou des autels par exemple, ce qui lui permettra de suivre son chemin ou même de vaincre des ennemis. Parfois, ces éléments peuvent faire partie d'une énigme qui nécessitera plusieurs étapes pour être résolue. Les éléments pourraient également être un moyen de recharger l'Énergie Éthérée et d'aider le joueur à vaincre des ennemis, ou ce pourrait être des éléments qui nécessitent de l'Énergie Éthérée pour être activés.</p>
+                <p class="editable-text" id="env_level_design">Toutes ces interactions ont leur propre comportement qui sera décrit dans un Blueprint de Level Design.</p>
+                <p class="editable-text" id="env_living_world">Le monde est vivant, peuplé de nombreuses interactions et PNJ, avec quelques points d'histoire ou des vues panoramiques. Chaque étape de l'histoire qui peut affecter la forme du monde ne sera pas réversible.</p>
+            </div>
+        </div>
+
+        <div id="tab-narrative" class="tab-content">
+            <div class="content-block">
+                <h2>Introduction - L'Éveil du Bosquet</h2>
+                <article class="editable-text prose prose-invert max-w-none" id="narrative_intro_text">
+                    <p>Lentement, ses yeux s'ouvrent suite à un mal de tête. Le vent siffle dans les feuilles d'un arbre gigantesque juste au-dessus de sa tête. Allongé sur le sol comme s'il dormait là depuis une éternité, le jeune garçon se leva et observa le bosquet qui l'entourait. Il semble voir une trouée entre les arbres, où un chemin exigu est schématisé sur le sol. Il commença à marcher à travers la forêt, parfois effrayé par les bruits proches autour de lui. Soudain, la pointe d'une épée toucha son cou et il arrêta tout mouvement. Une douce voix dit : « Qui es-tu et comment es-tu arrivé ici, étranger ? ». Effrayé, l'homme bégaya : « Je n'en sais pas vraiment plus que toi… ». Sortant de l'ombre, une femme montra son visage. Cheveux d'or, yeux d'émeraude, une beauté de déesse portant une armure de cuir et de métal noir, tenant une épée élégante d'une main. « N'essaie pas de te moquer de moi, gamin, personne ne peut accéder au sanctuaire sans être détecté par le sceau de protection. », dit-elle tandis que sa main libre commençait à briller, une orbe sacrée se matérialisant autour d'elle. L'homme parut choqué, comme si c'était la première fois qu'il voyait quelque chose comme ça, une réaction qui interpella notre furieuse femme qui arrêta sa démonstration et baissa son épée, « Tu n'as pas l'air de plaisanter, qui diable es-tu ? ». L'homme déglutit, prit une inspiration et dit : « Je… Je ne me souviens pas. Tout me semble si étrange, je ne sais même pas où je suis. Je me suis réveillé à la racine d'un arbre géant, j'ai juste essayé d'atteindre quelque chose qui ressemblait à un endroit sûr. ». La femme est perplexe mais confiante, « Suis-moi, je t'emmènerai où tu cherches. ». Il sourit nerveusement, « Merci, et.. hm.. je suis désolé si je n'ai rien à faire ici. ». Ils commencèrent à marcher à travers la forêt et l'homme demanda : « Qu'est-ce que cet endroit exactement ? ». « C'est la forêt de l'Arbre-Monde, l'arbre immense auquel tu dis t'être réveillé, cet arbre est l'essence de ce monde. C'est pourquoi cet endroit est interdit. », expliqua la femme. « Alors pourquoi es-tu ici ? », dit l'homme. « Parce que c'est mon devoir de protéger l'Arbre-Monde, je suis l'une des gardiennes de ce sanctuaire, tu aurais moins de chance avec l'un de mes compagnons. », s'amuse-t-elle. Il sourit et dit : « Alors je devrais te remercier encore de m'avoir trouvé en premier. » Tout à coup, elle s'arrêta et demanda à l'homme de se taire, écoutant quelque chose. « Ne bouge pas, je pense qu'il y en a un. », ordonna-t-elle. « Un de tes camarades ? », demanda-t-il, « Non, je sens quelque chose de vraiment mauvais juste devant. Quoi qu'il arrive, reste derrière moi, d'accord ? ». Il hocha la tête et, en un éclair, un groupe de créatures difformes surgit du bosquet, les encerclant. La femme commença à les attaquer, essayant de protéger l'amnésique. Quelque chose grandit en lui, comme un sentiment étrange, une énergie. Alors qu'une créature le chargeait, il fendit l'air avec sa main, créant un voile cramoisi, tranchant le monstre en deux. Il tremblait comme s'il gelait, la femme le regardant les yeux écarquillés et dans un moment de silence, les deux reprirent le combat contre le monstre, l'homme utilisant son nouveau pouvoir. Lorsque tous les agresseurs furent vaincus, la femme regarda l'homme, choquée par sa force. « Serait-ce possible-... Ne perdons pas de temps, nous devons partir avant que d'autres n'arrivent ici, dépêche-toi. » dit-elle, avant de marcher rapidement. Il la suivit, « Qu'est-ce que c'était ? », « Nous ne savons pas vraiment, ils sont apparus il y a peu de temps, attaquant et corrompant le bosquet, nous essayons de comprendre ce qu'ils sont et pourquoi ils sont si agressifs. », répondit-elle. « Je veux dire, la chose que j'ai faite.. Je ne comprends pas, je me sens si.. effrayé et si en colère.. ». « Nous en discuterons avec mes compagnons, je ne suis pas vraiment sûre de ce que tu as fait mais les gens qui peuvent faire de telles choses sont rares dans le monde, et encore plus rare ce genre de pouvoir. ». Leur marche est enfin terminée, ils arrivent dans une ville avec de courtes maisons en bois sculpté, des gens riant et dansant comme s'il y avait un festival. La femme et l'homme entrent dans une auberge, traversant la foule et poussant une porte derrière le comptoir. Ils entrent dans une grande pièce où se trouvent des gens, portant les mêmes vêtements que la femme, qui les regardent d'un sourcil levé. « Qui est-ce ? Et pourquoi as-tu utilisé l'appel d'urgence, Nynaël ? » dit une femme aux cheveux roux courts et un grand bâton blanc avec une pierre sombre au sommet. La guide de l'homme répondit : « Nous avons été pris en embuscade par des créatures de l'ombre, encore une fois, elles semblent être plus agressives et intelligentes. Et je l'ai trouvé dans le sanctuaire, il a dit qu'il ne se souvient de rien, même pas de son nom. ». Un petit homme aux yeux de vairon prit la parole à son tour : « Drôle de garçon, et tu penses que nous allons te croire ? Peut-être devrions-nous l'aider à retrouver ses souvenirs. », dit-il en prenant son énorme marteau dans sa main droite. « Azraël, repose ça, je n'ai pas fini. Nous arrivions ici quand les monstres nous ont encerclés dans le bosquet, et quelque chose s'est passé. Il m'a aidé en utilisant un pouvoir que je n'ai vu qu'une seule fois dans ma vie. ». « Nynaël, ne me dis pas que c'était… », dit l'homme. « C'était l'énergie éthérée. », affirma Nynaël. Azraël continua : « C'est impossible, le seul homme utilisant ce pouvoir est mort, le maître n'a pu l'enseigner à aucun d'entre nous. ». La femme aux cheveux roux répliqua : « Mais cela peut être une option… Pensez-y, personne n'a le pouvoir que nous avons mais si quelqu'un, un jour, est capable de l'éveiller… ». « Nala, fais-tu confiance à cet homme ? », dit la troisième femme en vêtements sombres. « Je fais confiance à Nynaël, si elle l'amène ici, il y a une raison alors dis-nous pourquoi. », répondit Nala. « Je sens quelque chose, nous pouvons lui faire confiance, je lui fais confiance, et le pouvoir qu'il a utilisé était si proche de notre maître mais aussi si proche du monstre… Il peut être la clé pour comprendre. J'ai vu quelque chose dans ses yeux, j'assumerai toutes les responsabilités le concernant. », dit-elle en regardant l'homme mystérieux. « Je ne comprends pas de quoi vous parlez, je ne sais pas ce qui se passe mais je veux dire que je ne suis pas une menace. Pour être honnête, je veux juste être en sécurité pour l'instant, tout cela est si nouveau pour moi… Nynaël, j'ai raison ? Merci pour tout mais je ne pense pas être la clé de quoi que ce soit, je suis juste… Je ne sais pas vraiment. Désolé. ». L'homme quitta simplement la pièce et commença à marcher à travers la ville. Soudain, il sembla sentir quelque chose.
+                    </p>
+                </article>
+            </div>
+            <div class="content-block">
+                <h3>Chapitre 1 - Le Roi Fou</h3>
+                <p class="editable-text" id="narrative_ch1_text">// Son corps tombe, empalé par la lourde pointe.</p>
+            </div>
+        </div>
+
+        <div id="tab-art" class="tab-content">
+            <div class="content-block">
+                <h2>Direction Artistique</h2>
+                <p class="editable-text" id="art_direction_text">
+                    (Cette section est à développer. Décrivez ici le style visuel, les inspirations, l'ambiance, le design des personnages, des environnements, etc. pour KAKUGO.)
+                </p>
+                <p class="editable-text" id="art_moodboard_placeholder">
+                    (Vous pourriez inclure ici des images de moodboard ou des concepts artistiques clés lorsque disponibles.)
+                </p>
+            </div>
+        </div>
+
+        <div id="tab-technical" class="tab-content">
+            <div class="content-block">
+                <h2>Notes de Programmation</h2>
+                <p class="editable-text" id="tech_engine">Kakugo est développé avec Unity 3D.</p>
+                <p class="editable-text" id="tech_script_org">Il n'y a pas de modèle de conception défini mais certains points relatifs à cela pourraient être expliqués. Premièrement, les scripts sont tous séparés par fonctionnalité et utilisation, mais nous évitons de rendre ce principe d'Utilisation Unique (Single Using Principle) trop rigide. Il n'y a pas de nécessité à cela car c'est un développement par un seul programmeur. Les scripts sont triés par fonctionnalité "principale", comme PlayerManager qui regroupera tous les contrôles du joueur.</p>
+            </div>
+            <div class="content-block">
+                <h2>Données et Sauvegarde</h2>
+                <p class="editable-text" id="tech_data_saving">Les données et la sauvegarde utilisent des fichiers de type JSON chargés depuis un serveur réseau au démarrage du jeu. Cela permet de développer les éléments de données sans entrer dans le moteur et de mettre à jour le jeu après son lancement.</p>
+            </div>
+            <div class="content-block">
+                <h2>Lanceur EmberForge</h2>
+                <p class="editable-text" id="tech_launcher">Le développement du jeu introduit le développement du lanceur EmberForge qui regroupera tous les jeux du studio. Il permettra aux joueurs d'avoir des tags, des listes d'amis et aussi de collecter des données et de faire des playtests. Pour installer et jouer à un jeu EmberForge sur PC, le lanceur est nécessaire ; c'est une protection anti-crack.</p>
+            </div>
+        </div>
+        
+        <div class="content-block mt-8">
+            <h2>Propriété Intellectuelle</h2>
+            <p class="text-sm italic editable-text" id="intellectual_property_notice">
+                Ce document est la propriété exclusive de M. NATHIEZ Djason et de la société EmberForge. Il est protégé par les lois applicables sur le droit d'auteur et la propriété intellectuelle. Toute reproduction, distribution, diffusion, modification ou utilisation de ce document, de son contenu ou de l'un de ses éléments, sans le consentement écrit préalable de M. NATHIEZ Djason et d'EmberForge, est strictement interdite. Les concepts, idées, designs, graphiques et autres éléments contenus dans ce document sont la propriété exclusive de M. NATHIEZ Djason et d'EmberForge, et sont protégés par les lois nationales et internationales sur la propriété intellectuelle. Toute violation des droits de propriété intellectuelle mentionnés ci-dessus peut entraîner des poursuites judiciaires conformément aux lois applicables. EmberForge tous droits réservés.
+            </p>
+        </div>
+
+    </main>
+
+    <button id="edit-mode-toggle" class="edit-mode-toggle">Mode Édition</button>
+    <div id="message-box">Message</div>
+
+
+    <footer class="bg-[#1E2228] py-4 text-center mt-auto">
+        <div class="container mx-auto px-6">
+            <p class="text-gray-500 text-sm">
+                &copy; <span id="currentYear"></span> EmberForge Studios. Tous droits réservés.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // --- UI Elements ---
+        const currentYearElement = document.getElementById('currentYear');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileNavMenu = document.getElementById('mobile-nav-menu');
+        const mobileMenuIcon = mobileMenuButton ? mobileMenuButton.querySelector('svg path') : null;
+        const tabBar = document.getElementById('kakugo-tab-bar');
+        const tabButtons = tabBar ? tabBar.querySelectorAll('.tab-button') : [];
+        const tabContents = document.querySelectorAll('.tab-content');
+        const editModeToggleButton = document.getElementById('edit-mode-toggle');
+        const messageBox = document.getElementById('message-box');
+        let editableElements = []; 
+        let isEditing = false;
+
+        function domReady(fn) {
+            if (document.readyState === "complete" || document.readyState === "interactive") {
+                setTimeout(fn, 1);
+            } else {
+                document.addEventListener("DOMContentLoaded", fn);
+            }
+        }
+
+        domReady(() => {
+            console.log("DOM fully loaded and parsed");
+            if (currentYearElement) {
+                currentYearElement.textContent = new Date().getFullYear();
+            }
+            collectEditableElements();
+            setupEventListeners();
+            // Ensure default images are set if src is missing
+            document.querySelectorAll('img[data-default-src]').forEach(img => {
+                if (!img.src || img.src === window.location.href) {
+                    img.src = img.dataset.defaultSrc;
+                }
+            });
+        });
+        
+        function collectEditableElements() {
+            editableElements = document.querySelectorAll('.editable-text, .editable-list-item');
+            console.log(`Collected ${editableElements.length} editable elements.`);
+        }
+
+        function setupEventListeners() {
+            if (mobileMenuButton && mobileNavMenu && mobileMenuIcon) {
+                mobileMenuButton.addEventListener('click', () => {
+                    const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true' || false;
+                    mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
+                    mobileNavMenu.classList.toggle('open');
+                    if (mobileNavMenu.classList.contains('open')) {
+                        mobileMenuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+                    } else {
+                        mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+                    }
+                });
+            }
+
+            if (tabBar) {
+                tabBar.addEventListener('click', (event) => {
+                    const clickedButton = event.target.closest('.tab-button');
+                    if (!clickedButton) return;
+                    const targetTabId = clickedButton.dataset.tab;
+                    tabButtons.forEach(button => button.classList.remove('active'));
+                    clickedButton.classList.add('active');
+                    tabContents.forEach(content => {
+                        content.classList.toggle('active', content.id === `tab-${targetTabId}`);
+                    });
+                });
+            }
+
+            if (editModeToggleButton) {
+                editModeToggleButton.addEventListener('click', () => {
+                    isEditing = !isEditing;
+                    if (isEditing) {
+                        editModeToggleButton.textContent = 'Quitter Édition (Non sauvegardé)';
+                        editModeToggleButton.classList.add('editing');
+                        editableElements.forEach(el => el.setAttribute('contenteditable', 'true'));
+                        showMessage("Mode édition activé. Les changements ne seront pas sauvegardés.");
+                    } else {
+                        editModeToggleButton.textContent = 'Mode Édition';
+                        editModeToggleButton.classList.remove('editing');
+                        editableElements.forEach(el => el.setAttribute('contenteditable', 'false'));
+                        showMessage("Mode édition désactivé.");
+                    }
+                });
+            }
+        }
+        
+        function showMessage(message, isError = false) {
+            if (!messageBox) return;
+            messageBox.textContent = message;
+            messageBox.style.backgroundColor = isError ? 'var(--flame-orange)' : 'var(--medium-grey)';
+            messageBox.classList.add('show');
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3500); // Increased duration for the message
+        }
+
+    </script>
+</body>
+</html>

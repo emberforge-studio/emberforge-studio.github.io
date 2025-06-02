@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmberForge - Mondes Incandescents</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #222831; /* Gris Foncé */
+            color: #F5F5F5; /* Blanc Polaire (blanc cassé pour un aspect plus doux) */
+        }
+        .flame-orange {
+            color: #FF6700;
+        }
+        .bg-flame-orange {
+            background-color: #FF6700;
+        }
+        .border-flame-orange {
+            border-color: #FF6700;
+        }
+        .hover-bg-flame-darker:hover {
+            background-color: #E05A00; /* Orange légèrement plus foncé au survol */
+        }
+        .hero-section {
+            background: linear-gradient(rgba(34, 40, 49, 0.85), rgba(34, 40, 49, 0.95)), url('https://placehold.co/1920x1080/333333/FF6700?text=EmberForge+Arri%C3%A8re-plan&font=inter') no-repeat center center / cover;
+            /* Arrière-plan de remplacement - à remplacer par une image thématique de jeu si disponible */
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem; /* Tailwind py-3 px-6 */
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin: 0.5rem; /* Ajout de marge pour espacer les boutons */
+        }
+        .btn-primary {
+            background-color: #FF6700; /* Orange Flamme */
+            color: #FFFFFF; /* Texte blanc */
+        }
+        .btn-primary:hover {
+            background-color: #E05A00; /* Orange Flamme plus foncé */
+            transform: scale(1.05);
+        }
+        .btn-secondary {
+            background-color: transparent;
+            color: #FF6700; /* Orange Flamme */
+            border: 2px solid #FF6700;
+        }
+        .btn-secondary:hover {
+            background-color: #FF6700;
+            color: #FFFFFF;
+            transform: scale(1.05);
+        }
+        /* Animation personnalisée pour le texte du héros */
+        .fade-in-up {
+            animation: fadeInUp 1s ease-out forwards;
+            opacity: 0;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; } /* Pour le deuxième bouton */
+
+        /* Animation de petites étincelles subtiles */
+        .spark {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background-color: #FF6700;
+            border-radius: 50%;
+            animation: fly 3s ease-out infinite;
+            opacity: 0;
+        }
+
+        @keyframes fly {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { transform: translate(var(--tx, 0px), var(--ty, -100px)) scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="fixed top-0 left-0 right-0 z-50 bg-opacity-80 backdrop-blur-md bg-[#222831E6] shadow-lg">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="#" class="flex items-center text-3xl font-black">
+                <img src="https://usercontent.googleapis.com/a/user/uploaded:image.png-eceb2dcf-8471-4362-87e8-0c6ba9027524" alt="Logo EmberForge" class="h-12 w-auto mr-3 shrink-0">
+                <span class="flame-orange">Ember</span><span class="text-white">Forge</span>
+            </a>
+            <nav class="space-x-6">
+                <a href="pages/about-us.html" class="text-gray-300 hover:text-flame-orange transition duration-300">À Propos</a>
+                <a href="pages/dev/kakugo.html" class="text-gray-300 hover:text-flame-orange transition duration-300">KAKUGO</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero-section h-screen flex items-center justify-center text-center relative overflow-hidden pt-16">
+        <div id="sparks-container" class="absolute inset-0 pointer-events-none"></div>
+
+        <div class="z-10 p-6">
+            <h1 class="text-5xl md:text-7xl font-black text-white mb-4 fade-in-up">
+                Ember<span class="flame-orange">Forge</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-200 mb-8 fade-in-up delay-1">
+                Mondes Incandescents, Légendes Façonnées.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center items-center">
+                <a href="about.html" class="btn btn-primary fade-in-up delay-2">
+                    À propos de nous
+                </a>
+                <a href="games.html" class="btn btn-secondary fade-in-up delay-3">
+                    Découvrez notre univers
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-[#1E2228] py-4 text-center fixed bottom-0 w-full">
+        <div class="container mx-auto px-6">
+            <p class="text-gray-500 text-sm">
+                &copy; <span id="currentYear"></span> EmberForge Studios.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Définit l'année en cours dans le pied de page
+        const currentYearElement = document.getElementById('currentYear');
+        if (currentYearElement) {
+            currentYearElement.textContent = new Date().getFullYear();
+        }
+        
+        // Animation d'étincelles pour la section héros
+        const sparksContainer = document.getElementById('sparks-container');
+        const numSparks = 30; // Nombre d'étincelles
+
+        if (sparksContainer) { // Vérifie si le conteneur existe
+            for (let i = 0; i < numSparks; i++) {
+                const spark = document.createElement('div');
+                spark.classList.add('spark');
+                spark.style.left = `${Math.random() * 100}%`; // Position horizontale aléatoire
+                spark.style.top = `${Math.random() * 20 + 80}%`; // Commence près du bas
+                spark.style.animationDelay = `${Math.random() * 3}s`; // Délai aléatoire
+                spark.style.setProperty('--tx', `${(Math.random() - 0.5) * 200}px`); // Déplacement horizontal aléatoire
+                spark.style.setProperty('--ty', `-${Math.random() * 150 + 50}px`); // Déplacement vertical aléatoire
+                sparksContainer.appendChild(spark);
+            }
+        }
+    </script>
+
+</body>
+</html>
